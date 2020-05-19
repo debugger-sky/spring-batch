@@ -1,9 +1,6 @@
 package com.sky.springbatch.job;
 
-import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -19,10 +16,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
 
-import com.sky.springbatch.entity.EmNdmsDaily;
-import com.sky.springbatch.entity.EmTmpNdmsDaily;
-import com.sky.springbatch.repository.EmNdmsDailyRepository;
-import com.sky.springbatch.repository.EmTmpNdmsDailyRepository;
+import com.sky.springbatch.entity.TbTmpUser;
+import com.sky.springbatch.entity.TmpUser;
+import com.sky.springbatch.repository.TbTmpUserRepository;
+import com.sky.springbatch.repository.TmpUserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,17 +32,17 @@ public class DbConfiguration {
 	private final JobBuilderFactory jobBuilderFactory;
 	private final StepBuilderFactory stepBuilderFactory;
 	
-	private final EmNdmsDailyRepository emNdmsDailyRepository;
-	private final EmTmpNdmsDailyRepository emTmpNdmsDailyRepository;
+	private final TbTmpUserRepository tbTmpUserRepository;
+	private final TmpUserRepository tmpUserRepository;
 	
 	public DbConfiguration(JobBuilderFactory jobBuilderFactory, 
 						   StepBuilderFactory stepBuilderFactory,
-						   EmNdmsDailyRepository emNdmsDailyRepository,
-						   EmTmpNdmsDailyRepository emTmpNdmsDailyRepository) {
+						   TbTmpUserRepository tbTmpUserRepository,
+						   TmpUserRepository tmpUserRepository) {
 		this.jobBuilderFactory = jobBuilderFactory;
 		this.stepBuilderFactory = stepBuilderFactory;
-		this.emNdmsDailyRepository = emNdmsDailyRepository;
-		this.emTmpNdmsDailyRepository = emTmpNdmsDailyRepository;
+		this.tbTmpUserRepository = tbTmpUserRepository;
+		this.tmpUserRepository = tmpUserRepository;
 	}
 	
 	
@@ -60,7 +57,7 @@ public class DbConfiguration {
 	@JobScope
 	public Step tmpStep() {
 		return stepBuilderFactory.get("tmpStep")
-				.<EmNdmsDaily, EmTmpNdmsDaily> chunk(chunkSize)
+				.<TbTmpUser, TmpUser> chunk(chunkSize)
 				.reader(ndmsDailyforTmpReader())
 				.processor(ndmsDailyToTmpProcessor())
 				.writer(ndmsDailyWriter())
@@ -69,10 +66,10 @@ public class DbConfiguration {
 	
 	@Bean
 	@StepScope
-	public ItemReader<EmNdmsDaily> ndmsDailyforTmpReader() {
-		return new RepositoryItemReaderBuilder<EmNdmsDaily>()
+	public ItemReader<TbTmpUser> ndmsDailyforTmpReader() {
+		return new RepositoryItemReaderBuilder<TbTmpUser>()
 				.name("ndmsDailyforTmpReader")
-				.repository(emNdmsDailyRepository)
+				.repository(tbTmpUserRepository)
 				.methodName("findAll")
 				.sorts(Collections.singletonMap("id", Sort.Direction.ASC))
 				.pageSize(chunkSize)
@@ -81,21 +78,21 @@ public class DbConfiguration {
 	
 	@Bean
 	@StepScope
-	public ItemProcessor<EmNdmsDaily, EmTmpNdmsDaily> ndmsDailyToTmpProcessor() {		
+	public ItemProcessor<TbTmpUser, TmpUser> ndmsDailyToTmpProcessor() {
 		return item -> {	
-			emTmpNdmsDailyRepository.truncateTmpNdmsDaily();
-			EmTmpNdmsDaily emTmpNdmsDaily = new EmTmpNdmsDaily();
-			emTmpNdmsDaily.setName(item.getName());
-			emTmpNdmsDaily.setAge(item.getAge());
-			emTmpNdmsDaily.setPhoneNumber(item.getPhoneNumber());
-			return emTmpNdmsDaily;
+			tmpUserRepository.truncateTmpNdmsDaily();
+			TmpUser tmpUser = new TmpUser();
+			tmpUser.setName(item.getName());
+			tmpUser.setAge(item.getAge());
+			tmpUser.setPhoneNumber(item.getPhoneNumber());
+			return tmpUser;
 		};
 	}
 	
 	@Bean
 	@StepScope
-	public ItemWriter<EmTmpNdmsDaily> ndmsDailyWriter() {
-		return list -> emTmpNdmsDailyRepository.saveAll(list);
+	public ItemWriter<TmpUser> ndmsDailyWriter() {
+		return list -> tmpUserRepository.saveAll(list);
 	}
 	
 	

@@ -2,44 +2,33 @@ package com.sky.springbatch.job;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.flow.FlowExecutionStatus;
 import org.springframework.batch.core.job.flow.JobExecutionDecider;
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.FlatFileParseException;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
-import org.springframework.batch.item.file.mapping.DefaultLineMapper;
-import org.springframework.batch.item.file.mapping.FieldSetMapper;
 import org.springframework.batch.item.file.separator.RecordSeparatorPolicy;
-import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
-import org.springframework.batch.item.file.transform.FieldSet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 
-import com.sky.springbatch.dto.NdmsDailyDto;
-import com.sky.springbatch.entity.EmNdmsDaily;
-import com.sky.springbatch.repository.EmNdmsDailyRepository;
+import com.sky.springbatch.dto.TmpUserDto;
+import com.sky.springbatch.entity.TbTmpUser;
+import com.sky.springbatch.repository.TbTmpUserRepository;
 
-import ch.qos.logback.core.pattern.color.BlackCompositeConverter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -51,16 +40,16 @@ public class FileConfiguration {
 	private final JobBuilderFactory jobBuilderFactory;
 	private final StepBuilderFactory stepBuilderFactory;
 	
-	private final EmNdmsDailyRepository emNdmsDailyRepository;
+	private final TbTmpUserRepository tbTmpUserRepository;
 	
 	private final String filePath = "C:\\Users\\user\\Desktop\\";
 
 	public FileConfiguration(JobBuilderFactory jobBuilderFactory, 
 							 StepBuilderFactory stepBuilderFactory,
-							 EmNdmsDailyRepository emNdmsDailyRepository) {
+							 TbTmpUserRepository tbTmpUserRepository) {
 		this.jobBuilderFactory = jobBuilderFactory;
 		this.stepBuilderFactory = stepBuilderFactory;
-		this.emNdmsDailyRepository = emNdmsDailyRepository;
+		this.tbTmpUserRepository = tbTmpUserRepository;
 	}
 	
 	
@@ -122,7 +111,7 @@ public class FileConfiguration {
 	@Bean
 	public Step insertDbStep() throws IOException {
 		return stepBuilderFactory.get("insertDbStep")
-				.<NdmsDailyDto, EmNdmsDaily> chunk(4)
+				.<TmpUserDto, TbTmpUser> chunk(4)
 				.faultTolerant()
 				.skip(FlatFileParseException.class)
 				.skipLimit(3)
@@ -175,9 +164,9 @@ public class FileConfiguration {
 	
 	@Bean
 	@StepScope
-	public FlatFileItemReader<NdmsDailyDto> ndmsFileReader(@Value("#{jobExecutionContext[desFileName]}") final String desFileName){
+	public FlatFileItemReader<TmpUserDto> ndmsFileReader(@Value("#{jobExecutionContext[desFileName]}") final String desFileName){
 
-		return new FlatFileItemReaderBuilder<NdmsDailyDto>()
+		return new FlatFileItemReaderBuilder<TmpUserDto>()
 				.name("FileItemReader")
 				.resource(new FileSystemResource(filePath + desFileName))
 				.recordSeparatorPolicy(new RecordSeparatorPolicy() {					
@@ -196,29 +185,29 @@ public class FileConfiguration {
 				})				
 				.delimited().delimiter("\t")
 				.names(names)
-				.fieldSetMapper(new BeanWrapperFieldSetMapper<NdmsDailyDto>() {{					
-					setTargetType(NdmsDailyDto.class);
+				.fieldSetMapper(new BeanWrapperFieldSetMapper<TmpUserDto>() {{
+					setTargetType(TmpUserDto.class);
 				}})
 				.build();	
 	}
 	
 	@Bean
 	@StepScope
-	public ItemProcessor<NdmsDailyDto, EmNdmsDaily> ndmsDailyProcessor() {
+	public ItemProcessor<TmpUserDto, TbTmpUser> ndmsDailyProcessor() {
 		log.info("ndmsDailyProcessor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");		
 		return item -> {
-			EmNdmsDaily emNdmsDaily = dtoToEntityConverter(item);
-			emNdmsDaily.setAge(emNdmsDaily.getAge()+1);
-			emNdmsDaily.setCreatedDate(LocalDateTime.now());
-			return emNdmsDaily;
+			TbTmpUser tbTmpUser = dtoToEntityConverter(item);
+			tbTmpUser.setAge(tbTmpUser.getAge()+1);
+			tbTmpUser.setCreatedDate(LocalDateTime.now());
+			return tbTmpUser;
 		};
 	}
 	
 	@Bean
 	@StepScope
-	public ItemWriter<EmNdmsDaily> writer() {
+	public ItemWriter<TbTmpUser> writer() {
 		log.info("write complete??????????????????");
-		return list -> emNdmsDailyRepository.saveAll(list);
+		return list -> tbTmpUserRepository.saveAll(list);
 	}
 	
 	
@@ -260,12 +249,12 @@ public class FileConfiguration {
 	/*
 	 * Ndms DTO <-> Entity converter
 	 */
-	public EmNdmsDaily dtoToEntityConverter(NdmsDailyDto dto) {
-		EmNdmsDaily emNdmsDaily = new EmNdmsDaily();
-		emNdmsDaily.setName(dto.getName());
-		emNdmsDaily.setAge(Integer.parseInt(dto.getAge()));
-		emNdmsDaily.setPhoneNumber(dto.getPhoneNumber());
-		return emNdmsDaily;
+	public TbTmpUser dtoToEntityConverter(TmpUserDto dto) {
+		TbTmpUser tbTmpUser = new TbTmpUser();
+		tbTmpUser.setName(dto.getName());
+		tbTmpUser.setAge(Integer.parseInt(dto.getAge()));
+		tbTmpUser.setPhoneNumber(dto.getPhoneNumber());
+		return tbTmpUser;
 	}
 
 }

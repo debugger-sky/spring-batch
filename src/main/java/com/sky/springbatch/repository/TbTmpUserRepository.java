@@ -4,8 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.sky.springbatch.entity.EmNdmsDaily;
+import com.sky.springbatch.entity.TbTmpUser;
 
-public interface EmNdmsDailyRepository extends JpaRepository<EmNdmsDaily, Long>{
-    Page<EmNdmsDaily> findByAge(int age, Pageable pageable);
+public interface TbTmpUserRepository extends JpaRepository<TbTmpUser, Long>{
+    Page<TbTmpUser> findByAge(int age, Pageable pageable);
 }

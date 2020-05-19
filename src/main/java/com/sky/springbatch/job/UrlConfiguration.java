@@ -10,8 +10,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 
 import com.sky.springbatch.dto.UrlDto;
-import com.sky.springbatch.repository.EmNdmsDailyRepository;
-import com.sky.springbatch.repository.EmTmpNdmsDailyRepository;
+import com.sky.springbatch.repository.TbTmpUserRepository;
+import com.sky.springbatch.repository.TmpUserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,8 +25,8 @@ public class UrlConfiguration {
 	
 	public UrlConfiguration(JobBuilderFactory jobBuilderFactory, 
 						    StepBuilderFactory stepBuilderFactory,
-						    EmNdmsDailyRepository emNdmsDailyRepository,
-						    EmTmpNdmsDailyRepository emTmpNdmsDailyRepository) {
+						    TbTmpUserRepository tbTmpUserRepository,
+						    TmpUserRepository tmpUserRepository) {
 		this.jobBuilderFactory = jobBuilderFactory;
 		this.stepBuilderFactory = stepBuilderFactory;
 	}

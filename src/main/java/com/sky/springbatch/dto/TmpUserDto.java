@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class NdmsDailyDto {
+public class TmpUserDto {
 
 	private String name;
 	private String age;

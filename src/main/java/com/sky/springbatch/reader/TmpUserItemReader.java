@@ -1,6 +1,6 @@
 package com.sky.springbatch.reader;
 
-import com.sky.springbatch.repository.EmNdmsDailyRepository;
+import com.sky.springbatch.repository.TbTmpUserRepository;
 import org.springframework.batch.item.adapter.AbstractMethodInvokingDelegator;
 import org.springframework.batch.item.adapter.DynamicMethodInvocationException;
 import org.springframework.batch.item.data.RepositoryItemReader;
@@ -15,7 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NdmsDailyItemReader<T> extends RepositoryItemReader {
+public class TmpUserItemReader<T> extends RepositoryItemReader {
 
     private final int pageSize = 2;
     private PagingAndSortingRepository<?, ?> repository;
@@ -23,9 +23,9 @@ public class NdmsDailyItemReader<T> extends RepositoryItemReader {
     private Sort sort = Sort.by(Sort.Direction.ASC, "id");
     private List<Integer> arguments = new ArrayList<Integer>();
 
-    public NdmsDailyItemReader(EmNdmsDailyRepository emNdmsDailyRepository) {
+    public TmpUserItemReader(TbTmpUserRepository tbTmpUserRepository) {
         arguments.add(26);
-        repository = emNdmsDailyRepository;
+        repository = tbTmpUserRepository;
     }
 
     @Override

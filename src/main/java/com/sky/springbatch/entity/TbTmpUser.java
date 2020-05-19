@@ -1,5 +1,6 @@
 package com.sky.springbatch.entity;
 
+
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
@@ -14,8 +15,8 @@ import lombok.Setter;
 
 @Getter @Setter
 @Entity
-@Table(name = "tmp_ndms_daily")
-public class EmTmpNdmsDaily {
+@Table(name = "tb_tmp_user")
+public class TbTmpUser {
 	
 	@Id
 	@GeneratedValue
@@ -36,17 +37,18 @@ public class EmTmpNdmsDaily {
 	@Column(name = "updatedDate")
 	private LocalDateTime updatedDate;
 	
-	public EmTmpNdmsDaily() {
+	public TbTmpUser() {
 		super();
 	}
 	
 	@Builder
-	public EmTmpNdmsDaily(String name,
+	public TbTmpUser(/* String id, */
+					   String name,
 					   Integer age,
 					   String phoneNumber) {
+//		this.id = Long.parseLong(id);
 		this.name = name;
 		this.age = age;
 		this.phoneNumber = phoneNumber;		
 	}
-
 }
