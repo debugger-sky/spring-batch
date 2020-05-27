@@ -3,19 +3,13 @@ package com.sky.springbatch.job;
 import com.sky.springbatch.dto.UserDto;
 import com.sky.springbatch.entity.TbUser;
 import com.sky.springbatch.repository.TbUserRepository;
-import lombok.SneakyThrows;
+import com.sky.springbatch.util.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.*;
-import org.springframework.batch.core.annotation.AfterRead;
-import org.springframework.batch.core.annotation.BeforeRead;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.core.jsr.ItemReadListenerAdapter;
-import org.springframework.batch.core.listener.CompositeItemReadListener;
-import org.springframework.batch.core.listener.ItemListenerSupport;
-import org.springframework.batch.core.listener.StepExecutionListenerSupport;
-import org.springframework.batch.core.listener.StepListenerSupport;
+import org.springframework.batch.core.listener.*;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
@@ -36,6 +30,7 @@ public class FileJobConfiguration {
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
     private final TbUserRepository tbUserRepository;
+    private final CommonUtil commonUtil;
 
     private final String filePath = "C:\\Users\\user\\Desktop\\";
     private final String fileName = "user.txt";
@@ -44,10 +39,12 @@ public class FileJobConfiguration {
 
     public FileJobConfiguration(JobBuilderFactory jobBuilderFactory,
                                 StepBuilderFactory stepBuilderFactory,
-                                TbUserRepository tbUserRepository) {
+                                TbUserRepository tbUserRepository,
+                                CommonUtil commonUtil) {
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
         this.tbUserRepository = tbUserRepository;
+        this.commonUtil = commonUtil;
     }
 
     @Bean
@@ -65,6 +62,13 @@ public class FileJobConfiguration {
                 .faultTolerant()
                 .skip(FlatFileParseException.class)
                 .skipLimit(3)
+                .listener(new SkipListenerSupport<UserDto, TbUser>(){
+                    @Override
+                    public void onSkipInRead(Throwable t) {
+                        log.error("exception message = {}", t.getMessage());
+                        log.error("exception cause={}", t.getCause().getMessage());
+                    }
+                })
                 .processor(userItemProcessor())
                 .writer(userItemWriter())
                 .build();
@@ -73,12 +77,11 @@ public class FileJobConfiguration {
     @Bean
     @StepScope
     public FlatFileItemReader<UserDto> userItemReader() {
-
         return new FlatFileItemReaderBuilder<UserDto>()
                 .name("userItemReader")
                 .resource(new FileSystemResource(filePath + fileName))
                 .delimited().delimiter("\t")
-                .names("userId", "passwd", "name")
+                .names(commonUtil.declaredFieldsName(UserDto.class))
                 .fieldSetMapper(new BeanWrapperFieldSetMapper<UserDto>() {{
                     setTargetType(UserDto.class);
                 }})
@@ -99,6 +102,7 @@ public class FileJobConfiguration {
             user.setUserId(item.getUserId());
             user.setPasswd(item.getPasswd());
             user.setName(item.getName());
+            user.setIntValue(item.getIntValue());
 
             return user;
         };

@@ -25,4 +25,7 @@ public class TbUser {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "int_value")
+    private Integer intValue;
+
 }
