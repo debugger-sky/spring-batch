@@ -82,9 +82,7 @@ public class FileJobConfiguration {
                 .resource(new FileSystemResource(filePath + fileName))
                 .delimited().delimiter("\t")
                 .names(commonUtil.declaredFieldsName(UserDto.class))
-                .fieldSetMapper(new BeanWrapperFieldSetMapper<UserDto>() {{
-                    setTargetType(UserDto.class);
-                }})
+                .targetType(UserDto.class)
                 .recordSeparatorPolicy(new SimpleRecordSeparatorPolicy() {
                     @Override
                     public String postProcess(String record) {
